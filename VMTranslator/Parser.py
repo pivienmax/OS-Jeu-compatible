@@ -5,24 +5,24 @@ import Lexer
 
 
 class Parser:
-    """No comment"""
+    """la classe Parser sert à  détailler les commandes à partir d'un fichier"""
 
     def __init__(self, file):
         self.lexer = Lexer.Lexer(file)
         self.command = self._read()
 
     def next(self):
-        """No comment"""
+        """retourne la commande et lit la suivante"""
         res = self.command
         self.command = self._read()
         return res
 
     def look(self):
-        """ No comment """
+        """ retourne la commande """
         return self.command
 
     def hasNext(self):
-        """No comment"""
+        """vérifie si il y a une commande suivante"""
         return self.command is not None
 
     def __iter__(self):
@@ -35,7 +35,7 @@ class Parser:
             raise StopIteration
 
     def _read(self):
-        # No comment
+        # lit la prochaine commande à partir du lexer
         command = self.lexer.look()
         if command is None:
             return None
@@ -57,12 +57,12 @@ class Parser:
                     exit()
 
     def _commandarithmetic(self):
-        # No comment
+        # traite une commande arithmérique
         command = self.lexer.next()
         return {'line': command['line'], 'col': command['col'], 'type': command['token']}
 
     def _commandpushpop(self):
-        # No comment
+        # traite une commande push ou pop
         command = self.lexer.next()
         segment = self.lexer.next()
         parameter = self.lexer.next()
@@ -74,7 +74,7 @@ class Parser:
             , 'segment': segment['token'], 'parameter': parameter['token']}
 
     def _commandbranching(self):
-        # No comment
+        # traite une commande de branchement
         command = self.lexer.next()
         label = self.lexer.next()
         if label is None or label['type'] != 'string':
@@ -85,7 +85,7 @@ class Parser:
             , 'label': label['token']}
 
     def _commandfunction(self):
-        # No comment
+        # traite une commande de fonction
         command = self.lexer.next()
         name = self.lexer.next()
         parameter = self.lexer.next()
@@ -97,7 +97,7 @@ class Parser:
             , 'function': name['token'], 'parameter': parameter['token']}
 
     def _commandreturn(self):
-        # No comment
+        # traite une commande de retour
         command = self.lexer.next()
         return {'line': command['line'], 'col': command['col'], 'type': command['token']}
 
