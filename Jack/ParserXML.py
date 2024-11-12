@@ -257,6 +257,138 @@ class ParserXML:
             print(f"SyntaxError (line={token['line']}, col={token['col']}): {token['token']}")
         exit()
 
+
+# Define a syntax tree structure for each grammar rule in Jack language
+
+# Structure for the entire class
+class_tree = {
+    "type": "class",
+    "name": "",
+    "variables": [],
+    "subroutines": []
+}
+
+# Structure for a class variable declaration
+class_var_dec = {
+    "type": "classVarDec",
+    "kind": "",
+    "varType": "",
+    "names": []
+}
+
+# Structure for a subroutine declaration
+subroutine_dec = {
+    "type": "subroutineDec",
+    "subroutineType": "",
+    "returnType": "",
+    "name": "",
+    "parameters": [],
+    "body": {}
+}
+
+# Structure for a parameter in a parameter list
+parameter = {
+    "type": "parameter",
+    "paramType": "",
+    "name": ""
+}
+
+# Structure for a subroutine body
+subroutine_body = {
+    "type": "subroutineBody",
+    "variables": [],
+    "statements": []
+}
+
+# Structure for a local variable declaration
+var_dec = {
+    "type": "varDec",
+    "varType": "",
+    "names": []
+}
+
+
+statement = {
+    "type": "",
+    "details": {}
+}
+
+# Structure for let statement
+let_statement = {
+    "type": "letStatement",
+    "varName": "",
+    "indexExpression": None,
+    "expression": {}
+}
+
+# Structure for if statement
+if_statement = {
+    "type": "ifStatement",
+    "condition": {},
+    "ifStatements": [],
+    "elseStatements": []
+}
+
+# Structure for while statement
+while_statement = {
+    "type": "whileStatement",
+    "condition": {},
+    "statements": []
+}
+
+# Structure for do statement
+do_statement = {
+    "type": "doStatement",
+    "subroutineCall": {}
+}
+
+# Structure for return statement
+return_statement = {
+    "type": "returnStatement",
+    "expression": None
+}
+
+# Structure for an expression
+expression = {
+    "type": "expression",
+    "terms": []
+}
+
+# Structure for a term
+term = {
+    "type": "term",
+    "kind": "",
+    "value": None,
+    "subExpression": None
+}
+
+# Structure for a subroutine call
+subroutine_call = {
+    "type": "subroutineCall",
+    "caller": None,
+    "subroutineName": "",
+    "arguments": []
+}
+
+# Structure for an operator
+operator = {
+    "type": "op",
+    "operator": ""
+}
+
+# Structure for a unary operator
+unary_op = {
+    "type": "unaryOp",
+    "operator": ""
+}
+
+# Structure for a keyword constant (true, false, null, this)
+keyword_constant = {
+    "type": "keywordConstant",
+    "value": ""
+}
+
+
 if __name__ == "__main__":
     file = sys.argv[1]
     print('-----debut')
