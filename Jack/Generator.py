@@ -34,25 +34,61 @@ class Generator:
         else:
             self.symbolRoutineTable.append(var)
 
-
     def subroutineDec(self, routine):
-        """
-        {'line':line, 'col': col,'type': 'constructor'|'function'|'method',
-            'return' : 'void| 'int'|'char'|'boolean'|className',
-            'name': subroutineName, 'argument': [variable],'local': [variable],
-            'instructions' : [instruction]
-        """
+        """Handles the subroutine declaration and its body."""
+        self.vmfile.write("// Subroutine " + routine['name'] + "\n")
+        self.symbolRoutineTable = []  # Reset local symbol table
+        # Add arguments and locals
+        for var in routine['argument']:
+            self.variable(var)
+        for var in routine['local']:
+            self.variable(var)
+
+        # Generate code for subroutine body
+        self.vmfile.write("function " + self.arbre['name'] + "." + routine['name'] + " " +
+                          str(len(routine['local'])) + "\n")
+
+        if routine['type'] == 'constructor':
+            # Handle constructor-specific initialization (allocating memory for fields)
+            num_fields = len([var for var in self.symbolClassTable if var['kind'] == 'field'])
+            self.vmfile.write("push constant " + str(num_fields) + "\n")
+            self.vmfile.write("call Memory.alloc 1\n")
+            self.vmfile.write("pop pointer 0\n")
+        elif routine['type'] == 'method':
+            # Handle method-specific initialization (setting 'this' to the current object)
+            self.vmfile.write("push argument 0\n")
+            self.vmfile.write("pop pointer 0\n")
+
+        # Generate code for subroutine instructions
+        for inst in routine['instructions']:
+            self.statement(inst)
 
     def statement(self, inst):
-        """
-        statement : letStatements|ifStatement|whileStatement|doStatement|returnStatement
-        """
+        """Handles different types of statements."""
+        if inst['type'] == 'let':
+            self.letStatement(inst)
+        elif inst['type'] == 'if':
+            self.ifStatement(inst)
+        elif inst['type'] == 'while':
+            self.whileStatement(inst)
+        elif inst['type'] == 'do':
+            self.doStatement(inst)
+        elif inst['type'] == 'return':
+            self.returnStatement(inst)
 
     def letStatement(self, inst):
-        """
-        {'line':line, 'col': col,'type': 'let',
-        'variable': varName, 'indice': expression, 'valeur': expression
-        """
+        """Handles let statements."""
+        self.vmfile.write("// let " + inst['variable'] + "\n")
+        # Handle index if present (array element assignment)
+        if 'indice' in inst and inst['indice']:
+            self.expression(inst['indice'])
+            self.vmfile.write("pop temp 0\n")
+            self.vmfile.write("push pointer 1\n")
+            self.vmfile.write("add\n")
+            self.vmfile.write("pop pointer 1\n")
+        # Handle assignment value
+        self.expression(inst['valeur'])
+        self.vmfile.write("pop local " + str(self.getVarIndex(inst['variable'])) + "\n")
 
     def ifStatement(self, inst):
         """
