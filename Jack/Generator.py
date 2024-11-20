@@ -15,15 +15,25 @@ class Generator:
             self.symbolRoutineTable = []
 
     def jackclass(self, arbre):
-        """
-            {'line': line, 'col': col, 'type': 'class', 'name': className,
-            'varDec': [variable], 'subroutine':[subroutine]}
-        """
+        """Handles the class structure."""
+        self.vmfile.write("// class " + arbre['name'] + "\n")
+        # Add class-level variables
+        for var in arbre['varDec']:
+            self.variable(var)
+        # Process subroutines
+        for subroutine in arbre['subroutine']:
+            self.subroutineDec(subroutine)
 
     def variable(self, var):
-        """
-        {'line': line, 'col': col, 'name': varName, 'kind': kind, 'type': type}
-        """
+        """Handles variable declarations (both instance and local variables)."""
+        kind = var['kind']
+        if kind == 'field':
+            self.symbolClassTable.append(var)
+        elif kind == 'static':
+            self.symbolClassTable.append(var)
+        else:
+            self.symbolRoutineTable.append(var)
+
 
     def subroutineDec(self, routine):
         """
