@@ -158,15 +158,29 @@ class Generator:
             self.vmfile.write(")")
 
     def subroutineCall(self, call):
-        """
-        {'line':line, 'col': col, 'classvar': className ou varName,
-        'name': subroutineName, 'argument': [expression]}
-        """
+        """Handles subroutine calls."""
+        self.vmfile.write("call " + call['classvar'] + "." + call['name'] + " " + str(len(call['argument'])) + "\n")
+        for arg in call['argument']:
+            self.expression(arg)
+    def getVarIndex(self, varName):
+        """Find the variable's index in the symbol table."""
+        for idx, var in enumerate(self.symbolRoutineTable):
+            if var['name'] == varName:
+                return idx
+        for idx, var in enumerate(self.symbolClassTable):
+            if var['name'] == varName:
+                return idx
+        return -1
+
+    def newLabel(self):
+        """Generates a new label for control flow."""
+        label = "LABEL" + str(self.labelCounter)
+        self.labelCounter += 1
+        return label
 
     def error(self, message=''):
         print(f"SyntaxError: {message}")
         exit()
-
 
 if __name__ == '__main__':
     file = sys.argv[1]
