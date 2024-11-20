@@ -91,43 +91,71 @@ class Generator:
         self.vmfile.write("pop local " + str(self.getVarIndex(inst['variable'])) + "\n")
 
     def ifStatement(self, inst):
-        """
-        {'line':line, 'col': col,
-        'type': 'if', 'condition': expression, 'true': [instruction],
-        'false': [instruction]}
-        """
+        """Handles if statements."""
+        label_true = self.newLabel()
+        label_end = self.newLabel()
+        self.vmfile.write("// if " + str(inst['condition']) + "\n")
+        self.expression(inst['condition'])
+        self.vmfile.write("if-goto " + label_true + "\n")
+        self.vmfile.write("goto " + label_end + "\n")
+        self.vmfile.write("label " + label_true + "\n")
+        for true_inst in inst['true']:
+            self.statement(true_inst)
+        self.vmfile.write("label " + label_end + "\n")
 
     def whileStatement(self, inst):
-        """
-        {'line':line, 'col': col,
-        'type': 'while', 'condition': expression,
-        'instructions': [instruction]}
-        """
+        """Handles while statements."""
+        label_start = self.newLabel()
+        label_end = self.newLabel()
+        self.vmfile.write("// while " + str(inst['condition']) + "\n")
+        self.vmfile.write("label " + label_start + "\n")
+        self.expression(inst['condition'])
+        self.vmfile.write("not\n")
+        self.vmfile.write("if-goto " + label_end + "\n")
+        for while_inst in inst['instructions']:
+            self.statement(while_inst)
+        self.vmfile.write("goto " + label_start + "\n")
+        self.vmfile.write("label " + label_end + "\n")
 
     def doStatement(self, inst):
-        """
-        {'line':line, 'col': col,
-        'type': 'do', 'classvar': className ou varName,
-        'name': subroutineName, 'argument': [expression]}
-        """
+        """Handles do statements."""
+        self.vmfile.write("// do " + str(inst['name']) + "\n")
+        self.subroutineCall(inst)
 
     def returnStatement(self, inst):
-        """
-        {'line':line, 'col': col, 'type': 'return', 'valeur': expression}
-        """
+        """Handles return statements."""
+        self.vmfile.write("// return\n")
+        if inst['valeur']:
+            self.expression(inst['valeur'])
+        else:
+            self.vmfile.write("push constant 0\n")
+        self.vmfile.write("return\n")
 
     def expression(self, exp):
-        """
-        [term op ...]
-            avec op : '+'|'-'|'*'|'/'|'&'|'|'|'<'|'>'|'='
-        """
+        """Handles expressions and operations."""
+        for term in exp:
+            self.term(term)
 
     def term(self, t):
-        """
-        {'line':line, 'col': col,
-        'type': 'int'| 'string'| 'constant'| 'varName'|'call'| 'expression'|'-'|'~',
-         'indice':expression, 'subroutineCall': subroutineCall}
-        """
+        """Handles terms in an expression."""
+        if t['type'] == 'int':
+            self.vmfile.write("push constant " + str(t['value']) + "\n")
+        elif t['type'] == 'string':
+            self.vmfile.write("push constant " + str(len(t['value'])) + "\n")
+            self.vmfile.write("call String.new 1\n")
+            for char in t['value']:
+                self.vmfile.write("push constant " + str(ord(char)) + "\n")
+                self.vmfile.write("call String.appendChar 2\n")
+        elif t['type'] == 'constant':
+            self.vmfile.write("push constant " + str(t['value']) + "\n")
+        elif t['type'] == 'varName':
+            self.vmfile.write("push " + t['kind'] + " " + str(self.getVarIndex(t['name'])) + "\n")
+        elif t['type'] == 'call':
+            self.subroutineCall(t)
+        elif t['type'] == 'expression':
+            self.vmfile.write("(")
+            self.expression(t['indice'])
+            self.vmfile.write(")")
 
     def subroutineCall(self, call):
         """
