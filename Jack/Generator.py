@@ -1,6 +1,6 @@
 """No comment"""
 import sys
-import Parser
+import ParserN
 
 
 class Generator:
@@ -8,7 +8,7 @@ class Generator:
 
     def __init__(self, file=None):
         if file is not None:
-            self.parser = Parser.Parser(file)
+            self.parser = ParserN.Parser(file)
             self.arbre = self.parser.jackclass()
             self.vmfile = open(self.arbre['name'] + '.vm', "w")
             self.symbolClassTable = []
@@ -186,5 +186,5 @@ if __name__ == '__main__':
     file = sys.argv[1]
     print('-----debut')
     generator = Generator(file)
-    generator.jackclass()
+    generator.jackclass(file)
     print('-----fin')
