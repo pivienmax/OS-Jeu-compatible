@@ -1,0 +1,89 @@
+
+        graph mygraph {
+        n0 [shape=point] ;
+        
+        n1 [shape="invhouse",label="class"];
+        n0 -- n1 [label=""];
+        
+        n2 [label="SquareGame"];
+        n1 -- n2[label="name"]
+        
+        n3 [shape="point",label=""];
+        n1 -- n3 [label="variables"];
+        
+        n4 [shape="invhouse",label="classVarDec"];
+        n3 -- n4 [label=""];
+        
+        n5 [shape="invhouse",label="keyword"];
+        n4 -- n5 [label="kind"];
+        
+        n6 [label="field"];
+        n5 -- n6[label="token"]
+        
+        n7 [label="Square"];
+        n4 -- n7[label="varType"]
+        
+        n8 [shape="point",label=""];
+        n4 -- n8 [label="names"];
+        
+        n9 [label="square"];
+        n8 -- n9[label=""]
+        
+        n10 [shape="invhouse",label="classVarDec"];
+        n3 -- n10 [label=""];
+        
+        n11 [shape="invhouse",label="keyword"];
+        n10 -- n11 [label="kind"];
+        
+        n12 [label="field"];
+        n11 -- n12[label="token"]
+        
+        n13 [label="int"];
+        n10 -- n13[label="varType"]
+        
+        n14 [shape="point",label=""];
+        n10 -- n14 [label="names"];
+        
+        n15 [label="direction"];
+        n14 -- n15[label=""]
+        
+        n16 [shape="point",label=""];
+        n1 -- n16 [label="subroutines"];
+        
+        n17 [shape="invhouse",label="subroutineDec"];
+        n16 -- n17 [label=""];
+        
+        n18 [shape="invhouse",label="keyword"];
+        n17 -- n18 [label="subroutineType"];
+        
+        n19 [label="constructor"];
+        n18 -- n19[label="token"]
+        
+        n20 [label="SquareGame"];
+        n17 -- n20[label="returnType"]
+        
+        n21 [label="new"];
+        n17 -- n21[label="name"]
+        
+        n22 [shape="point",label=""];
+        n17 -- n22 [label="parameters"];
+        
+        n23 [shape="invhouse",label="parameter"];
+        n22 -- n23 [label=""];
+        
+        n24 [label=")"];
+        n23 -- n24[label="paramType"]
+        
+        n25 [label="{"];
+        n23 -- n25[label="name"]
+        
+        n26 [shape="invhouse",label="subroutineBody"];
+        n17 -- n26 [label="body"];
+        
+        n27 [shape="point",label=""];
+        n26 -- n27 [label="variables"];
+        
+        n28 [shape="point",label=""];
+        n26 -- n28 [label="statements"];
+        }
+        
