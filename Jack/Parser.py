@@ -173,7 +173,7 @@ class Parser:
 
 
 if __name__ == "__main__":
-    file = sys.argv[1]
+    file = sys.argv[0]
     print('-----debut')
     parser = Parser(file)
     arbre = parser.jackclass()

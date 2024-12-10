@@ -1,6 +1,7 @@
 import sys
 import Lexer
 import todot
+import tempfile
 
 class Parser:
     """Parser to calculate the simplified syntax tree of a Jack program."""
@@ -9,18 +10,26 @@ class Parser:
         self.lexer = Lexer.Lexer(file)
         self.syntax_tree = None  # Root of the syntax tree
 
+    def process(self, expected_token):
+        """
+        Vérifie que le prochain jeton correspond au jeton attendu.
+        Si c'est le cas, consomme ce jeton. Sinon, lève une exception.
+        """
+        actual_token = self.lexer.next()  # Récupère le prochain jeton du lexer
+
     def jackclass(self):
         # Process the main class rule and return its structure as a dictionary
+        self.lexer.peek()
         self.process('class')
         class_name = self.className()
         self.process('{')
         variables = []
         subroutines = []
-        while self.lexer.peek() in ['static', 'field']:
+        while self.lexer.peek()['token'] in ['static', 'field']:
             variables.append(self.classVarDec())
-        while self.lexer.peek() in ['constructor', 'function', 'method']:
+
+        while self.lexer.peek()['token'] in ['constructor', 'function', 'method']:
             subroutines.append(self.subroutineDec())
-        self.process('}')
 
         self.syntax_tree = {
             "type": "class",
@@ -29,6 +38,8 @@ class Parser:
             "subroutines": subroutines
         }
         return self.syntax_tree
+
+
 
     def classVarDec(self):
         # Process class variable declarations
@@ -120,22 +131,22 @@ class Parser:
         }
 
     def className(self):
-        # Process class name
-        name = self.lexer.peek()
-        self.process(name)
-        return name
+        # Traite le nom de classe
+        token = self.lexer.peek()  # Jeton structuré
+        self.process(token['token'])  # Compare uniquement la valeur réelle du jeton
+        return token['token']
 
     def subroutineName(self):
-        # Process subroutine name
-        name = self.lexer.peek()
-        self.process(name)
-        return name
+        # Traite le nom de sous-routine
+        token = self.lexer.peek()
+        self.process(token['token'])
+        return token['token']
 
     def varName(self):
-        # Process variable name
-        name = self.lexer.peek()
-        self.process(name)
-        return name
+        # Traite le nom de variable
+        token = self.lexer.peek()
+        self.process(token['token'])
+        return token['token']
 
     def statements(self):
         # Process statements
@@ -292,7 +303,8 @@ class Parser:
 
 
 if __name__ == "__main__":
-    file = sys.argv[1]
+    file = sys.argv[0]
+
     print('-----debut')
     parser = Parser(file)
     arbre = parser.jackclass()

@@ -1,6 +1,5 @@
 import re
 import sys
-
 import Reader
 
 '''No comment'''
@@ -121,6 +120,12 @@ class Lexer:
         """ No comment """
         return self.tokens[1]
 
+    def peek(self):
+        """
+        Retourne le prochain jeton sans le consommer.
+        """
+        return self.tokens[0] if self.tokens[0] else None
+
     def _pattern(self):
         # No comment
         return re.compile(r"""
@@ -142,7 +147,7 @@ class Lexer:
 
 
 if __name__ == "__main__":
-    file = sys.argv[1]
+    file = sys.argv[0]
     print('-----debut')
     lexer = Lexer(file)
     for token in lexer:

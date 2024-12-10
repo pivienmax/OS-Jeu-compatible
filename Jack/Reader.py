@@ -58,7 +58,7 @@ class Reader:
 
 
 if __name__ == "__main__":
-    file = sys.argv[1]
+    file = sys.argv[0]
     print('-----debut')
     lecteur = Reader(file)
     for c in lecteur:
