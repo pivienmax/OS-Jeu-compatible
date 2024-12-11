@@ -3,6 +3,7 @@ from ctypes import*
 
 import Lexer
 import todot
+import tempfile
 
 class Parser :
     """Parser to calculate the simplified syntax tree of a Jack program."""
@@ -10,6 +11,13 @@ class Parser :
     def __init__(self, file):
         self.lexer = Lexer.Lexer(file)
         self.syntax_tree = self.jackclass()  # Root of the syntax tree
+
+    def process(self, expected_token):
+        """
+        Vérifie que le prochain jeton correspond au jeton attendu.
+        Si c'est le cas, consomme ce jeton. Sinon, lève une exception.
+        """
+        actual_token = self.lexer.next()  # Récupère le prochain jeton du lexer
 
     def process(self, expected_token):
         """
