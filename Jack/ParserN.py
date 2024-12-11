@@ -1,26 +1,36 @@
 import sys
+from ctypes import*
+
 import Lexer
 import todot
 
-class Parser:
+class Parser :
     """Parser to calculate the simplified syntax tree of a Jack program."""
 
     def __init__(self, file):
         self.lexer = Lexer.Lexer(file)
-        self.syntax_tree = None  # Root of the syntax tree
+        self.syntax_tree = self.jackclass()  # Root of the syntax tree
+
+    def process(self, expected_token):
+        """
+        Vérifie que le prochain jeton correspond au jeton attendu.
+        Si c'est le cas, consomme ce jeton. Sinon, lève une exception.
+        """
+        actual_token = self.lexer.next()  # Récupère le prochain jeton du lexer
 
     def jackclass(self):
         # Process the main class rule and return its structure as a dictionary
+        self.lexer.peek()
         self.process('class')
         class_name = self.className()
         self.process('{')
         variables = []
         subroutines = []
-        while self.lexer.peek() in ['static', 'field']:
+        while self.lexer.peek()['token'] in ['static', 'field']:
             variables.append(self.classVarDec())
-        while self.lexer.peek() in ['constructor', 'function', 'method']:
+
+        while self.lexer.peek()['token'] in ['constructor', 'function', 'method']:
             subroutines.append(self.subroutineDec())
-        self.process('}')
 
         self.syntax_tree = {
             "type": "class",
@@ -29,6 +39,8 @@ class Parser:
             "subroutines": subroutines
         }
         return self.syntax_tree
+
+
 
     def classVarDec(self):
         # Process class variable declarations
@@ -67,12 +79,13 @@ class Parser:
         self.process(')')
         body = self.subroutineBody()
         return {
-            "type": "subroutineDec",
+            "type": "subroutine",
             "subroutineType": subroutine_type,
             "returnType": return_type,
             "name": name,
-            "parameters": parameters,
-            "body": body
+            "argument": parameters,  # Correspond à "arguments"
+            "local": body['variables'],  # Correspond à "variables" locales
+            "instructions": body['statements']  # Correspond aux instructions
         }
 
     def parameterList(self):
@@ -114,28 +127,28 @@ class Parser:
             names.append(self.varName())
         self.process(';')
         return {
-            "type": "varDec",
-            "varType": var_type,
-            "names": names
+            "kind": kind,  # Remplacez "type" par "kind"
+            "type": var_type,
+            "name": names  # Utilisez une liste "names" si plusieurs noms sont déclarés
         }
 
     def className(self):
-        # Process class name
-        name = self.lexer.peek()
-        self.process(name)
-        return name
+        # Traite le nom de classe
+        token = self.lexer.peek()  # Jeton structuré
+        self.process(token['token'])  # Compare uniquement la valeur réelle du jeton
+        return token['token']
 
     def subroutineName(self):
-        # Process subroutine name
-        name = self.lexer.peek()
-        self.process(name)
-        return name
+        # Traite le nom de sous-routine
+        token = self.lexer.peek()
+        self.process(token['token'])
+        return token['token']
 
     def varName(self):
-        # Process variable name
-        name = self.lexer.peek()
-        self.process(name)
-        return name
+        # Traite le nom de variable
+        token = self.lexer.peek()
+        self.process(token['token'])
+        return token['token']
 
     def statements(self):
         # Process statements
@@ -239,7 +252,7 @@ class Parser:
     def term(self):
         # Simplified for different term types
         if self.lexer.peek().isdigit():
-            value = self.lexer.peek()
+            value = int(self.lexer.peek())
             self.process(value)
             return {"type": "integerConstant", "value": value}
         elif self.lexer.peek().startswith('"'):
@@ -269,6 +282,7 @@ class Parser:
                 return self.subroutineCall()
             return {"type": "varName", "name": var_name}
 
+
     def subroutineCall(self):
         # Similar to term, handles subroutine calls
         caller = self.className() if self.lexer.peek() == '.' else None
@@ -292,9 +306,10 @@ class Parser:
 
 
 if __name__ == "__main__":
-    file = sys.argv[1]
+    file = sys.argv[0]
+
     print('-----debut')
-    parser = Parser(file)
+    parser = (Parser(file))
     arbre = parser.jackclass()
     todot = todot.Todot(file)
     todot.todot(arbre)

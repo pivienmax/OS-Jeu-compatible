@@ -1,27 +1,40 @@
-"""No comment"""
 import sys
 import ParserN
 
 
-class Generator:
-    """No comment"""
+def error(message=''):
+    print(f"SyntaxError: {message}")
+    exit()
 
-    def __init__(self, file=None):
-        if file is not None:
-            self.parser = ParserN.Parser(file)
-            self.arbre = self.parser.jackclass()
+
+class Generator:
+    def __init__(self, arbre=None):
+        self.labelCounter = 0
+        if arbre is not None:
+            self.arbre = arbre
             self.vmfile = open(self.arbre['name'] + '.vm', "w")
             self.symbolClassTable = []
             self.symbolRoutineTable = []
+        else:
+            self.arbre = None
 
     def jackclass(self, arbre):
         """Handles the class structure."""
+        if not isinstance(arbre, dict):
+            raise TypeError("L'objet 'arbre' doit être un dictionnaire, reçu : " + str(type(arbre)))
+
+        if 'name' not in arbre or 'variables' not in arbre or 'subroutines' not in arbre:
+            raise KeyError(
+                "L'objet 'arbre' doit contenir les clés 'name', 'variables', et 'subroutines'. Reçu : " + str(arbre))
+
         self.vmfile.write("// class " + arbre['name'] + "\n")
+
         # Add class-level variables
-        for var in arbre['varDec']:
+        for var in arbre['variables']:  # Remplace 'varDec' par 'variables'
             self.variable(var)
+
         # Process subroutines
-        for subroutine in arbre['subroutine']:
+        for subroutine in arbre['subroutines']:  # Remplace 'subroutine' par 'subroutines'
             self.subroutineDec(subroutine)
 
     def variable(self, var):
@@ -178,13 +191,12 @@ class Generator:
         self.labelCounter += 1
         return label
 
-    def error(self, message=''):
-        print(f"SyntaxError: {message}")
-        exit()
 
 if __name__ == '__main__':
-    file = sys.argv[1]
+    file = sys.argv[0]
     print('-----debut')
-    generator = Generator(file)
-    generator.jackclass(file)
+    parser = ParserN.Parser(file)
+    arbre = parser.jackclass()
+    generator = Generator(arbre)
+    generator.jackclass(generator.arbre)
     print('-----fin')

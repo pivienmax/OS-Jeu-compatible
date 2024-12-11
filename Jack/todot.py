@@ -67,7 +67,7 @@ class Todot:
 
 
 if __name__ == "__main__":
-    file = sys.argv[1]
+    file = sys.argv[0]
     print('-----debut')
     todot = Todot(file)
     todot.todot({'type': '+', 'a': ["toto", '+', 0, 2, [8, 1, 2, 3, 4]], 'b': [[8, 9, 76, 4], 'toto'],

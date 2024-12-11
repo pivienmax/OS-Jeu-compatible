@@ -390,8 +390,19 @@ keyword_constant = {
 
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Erreur : Veuillez spécifier un fichier Jack en argument.")
+        exit(1)
+
     file = sys.argv[1]
-    print('-----debut')
-    parser = ParserXML(file)
-    parser.jackclass()
-    print('-----fin')
+    if not file.endswith(".jack"):
+        print("Erreur : Le fichier doit avoir l'extension .jack.")
+        exit(1)
+
+    print('-----Début de l’analyse')
+    try:
+        parser = ParserXML(file)
+        parser.jackclass()
+        print('-----Fin de l’analyse')
+    except Exception as e:
+        print(f"Erreur : {e}")
