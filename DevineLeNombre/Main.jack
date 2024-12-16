@@ -1,0 +1,73 @@
+class Main {
+	static int selectedButton, winsCount, losesCount, maxGuessNumber, gameAttempsCount; 
+	function void main(){
+		let selectedButton = 0;
+		let maxGuessNumber = 100;
+		let gameAttempsCount = 7;
+		do InterfaceGraphique.drawMainMenu(selectedButton);
+		do Main.startReadCharLoop();
+		return;
+	}
+	function void startReadCharLoop(){
+		var char readChar;
+		while (true){
+			do Output.moveCursor(0, 0);
+			let readChar = Keyboard.readChar();
+			if ((readChar = 131) | (readChar = 133)){
+				do Main.updateMainMenuSelectedButton();
+			}
+			if (readChar = 128){
+				do Main.pressSelectedButton();
+			}
+		}
+		return;
+	}
+
+	function void updateMainMenuSelectedButton(){
+		do InterfaceGraphique.clearMainMenuSelectedButtonUnderline(selectedButton);
+		if (selectedButton = 0){
+			let selectedButton = 1;
+		} else {
+			if (selectedButton = 1){
+				let selectedButton = 0;
+			}
+		}
+		do InterfaceGraphique.drawMainMenuSelectedButtonUnderline(selectedButton);
+		return;
+	}
+
+	function void pressPlayButton(){	
+		var int seed;
+		var char readChar;
+		var Game game;
+		do InterfaceGraphique.clearMainWindow();
+		do InterfaceGraphique.drawSeedPrompt();			
+		let readChar = Keyboard.readChar();	
+		do InterfaceGraphique.clearMainWindow();	
+		do Random.setSeed(readChar); 
+		let seed = Random.randRange(maxGuessNumber);
+		let game = Game.new(seed, maxGuessNumber, gameAttempsCount);
+		do game.start();
+		if (game.isWon()){
+			let winsCount = winsCount + 1;	
+		} else {
+			let losesCount = losesCount + 1;
+		}
+		do InterfaceGraphique.clearMainWindow();
+		do InterfaceGraphique.drawMainMenu(selectedButton);
+		return;	
+	}
+	function void pressExitButton(){
+		do Sys.halt();
+		return;
+	}
+	function void pressSelectedButton(){
+		if (selectedButton = 0){
+			do Main.pressPlayButton();
+		}
+		if (selectedButton = 1){
+			do Main.pressExitButton();
+		}
+		return;
+	}
+}

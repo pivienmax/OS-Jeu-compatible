@@ -1,0 +1,153 @@
+function Main.main 0
+push constant 0
+pop static 0
+push constant 100
+pop static 3
+push constant 7
+pop static 4
+push static 0
+call InterfaceGraphique.drawMainMenu 1
+pop temp 0
+call Main.startReadCharLoop 0
+pop temp 0
+push constant 0
+return
+function Main.startReadCharLoop 1
+label WHILE_EXP0
+push constant 0
+not
+not
+if-goto WHILE_END0
+push constant 0
+push constant 0
+call Output.moveCursor 2
+pop temp 0
+call Keyboard.readChar 0
+pop local 0
+push local 0
+push constant 131
+eq
+push local 0
+push constant 133
+eq
+or
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+call Main.updateMainMenuSelectedButton 0
+pop temp 0
+label IF_FALSE0
+push local 0
+push constant 128
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+call Main.pressSelectedButton 0
+pop temp 0
+label IF_FALSE1
+goto WHILE_EXP0
+label WHILE_END0
+push constant 0
+return
+function Main.updateMainMenuSelectedButton 0
+push static 0
+call InterfaceGraphique.clearMainMenuSelectedButtonUnderline 1
+pop temp 0
+push static 0
+push constant 0
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 1
+pop static 0
+goto IF_END0
+label IF_FALSE0
+push static 0
+push constant 1
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push constant 0
+pop static 0
+label IF_FALSE1
+label IF_END0
+push static 0
+call InterfaceGraphique.drawMainMenuSelectedButtonUnderline 1
+pop temp 0
+push constant 0
+return
+function Main.pressPlayButton 3
+call InterfaceGraphique.clearMainWindow 0
+pop temp 0
+call InterfaceGraphique.drawSeedPrompt 0
+pop temp 0
+call Keyboard.readChar 0
+pop local 1
+call InterfaceGraphique.clearMainWindow 0
+pop temp 0
+push local 1
+call Random.setSeed 1
+pop temp 0
+push static 3
+call Random.randRange 1
+pop local 0
+push local 0
+push static 3
+push static 4
+call Game.new 3
+pop local 2
+push local 2
+call Game.start 1
+pop temp 0
+push local 2
+call Game.isWon 1
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push static 1
+push constant 1
+add
+pop static 1
+goto IF_END0
+label IF_FALSE0
+push static 2
+push constant 1
+add
+pop static 2
+label IF_END0
+call InterfaceGraphique.clearMainWindow 0
+pop temp 0
+push static 0
+call InterfaceGraphique.drawMainMenu 1
+pop temp 0
+push constant 0
+return
+function Main.pressExitButton 0
+call Sys.halt 0
+pop temp 0
+push constant 0
+return
+function Main.pressSelectedButton 0
+push static 0
+push constant 0
+eq
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+call Main.pressPlayButton 0
+pop temp 0
+label IF_FALSE0
+push static 0
+push constant 1
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+call Main.pressExitButton 0
+pop temp 0
+label IF_FALSE1
+push constant 0
+return

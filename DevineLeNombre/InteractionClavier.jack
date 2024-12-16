@@ -1,0 +1,29 @@
+class InteractionClavier{
+	function String readString(int maxLength){
+		var String buffer;
+		var char readChar;
+		var int readCharCount;
+		let buffer = String.new(maxLength);
+		let readChar = 0;
+		let readCharCount = 0;
+		while (~(readChar = 128)){
+			let readChar = Keyboard.readChar();
+			if (readChar = 129){
+				if (readCharCount > 0){
+					do buffer.eraseLastChar();
+					let readCharCount = readCharCount - 1;
+				} else {
+					do Output.printChar(32);
+				}
+			} else {
+				if (readCharCount < maxLength){
+					do buffer.appendChar(readChar);
+					let readCharCount = readCharCount + 1;
+				} else {
+					do Output.backSpace();
+				}
+			}
+		}
+		return buffer;
+	}
+}

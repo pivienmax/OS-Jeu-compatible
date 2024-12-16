@@ -1,0 +1,54 @@
+class Game{
+	field int numberToGuess, remainedNumberOfAttemps, lessNumbersCount, greaterNumbersCount, maxNumberToGuess, minNumberToGuess;
+	field boolean isWon;
+	
+	constructor Game new(int numberToGuessValue, int maxNumberToGuessValue, int numberOfAttemps){
+		let numberToGuess = numberToGuessValue;
+		let remainedNumberOfAttemps = numberOfAttemps;
+		let greaterNumbersCount = 0;
+		let lessNumbersCount = 0;
+		let minNumberToGuess = 0;
+		let maxNumberToGuess = maxNumberToGuessValue;
+		let isWon = false;
+		return this;
+	}
+	method boolean isWon(){
+		return isWon;
+	}
+	
+	method void start(){
+		var String inputString;
+		var int inputNumber;
+		var char readChar;
+		do InterfaceGraphique.clearMainWindow();	
+		do InterfaceGraphique.drawGameWindow(minNumberToGuess, maxNumberToGuess);
+		while ((remainedNumberOfAttemps > 0) & (~(isWon))) {
+			do InterfaceGraphique.drawGameWindowRemainedAttempsCount(remainedNumberOfAttemps);	
+			do InterfaceGraphique.moveGameWindowInputCursor();
+			let inputString = InteractionClavier.readString(3);
+			let inputNumber = inputString.intValue();	
+			if (inputNumber < numberToGuess){
+				do InterfaceGraphique.drawGameWindowLessNumber(lessNumbersCount, inputNumber);
+				let lessNumbersCount = lessNumbersCount + 1;
+			}
+			if (inputNumber > numberToGuess){
+				do InterfaceGraphique.drawGameWindowGreaterNumber(greaterNumbersCount, inputNumber);
+				let greaterNumbersCount = greaterNumbersCount + 1;
+			}
+			if (inputNumber = numberToGuess){
+				let isWon = true;
+			}
+			do inputString.dispose();
+			do InterfaceGraphique.clearGameWindowInput();
+			let remainedNumberOfAttemps = remainedNumberOfAttemps - 1;
+		}
+		do InterfaceGraphique.clearMainWindow();
+		if (isWon){
+			do InterfaceGraphique.drawWinWindow();
+		} else {
+			do InterfaceGraphique.drawLoseWindowStatic();
+		}
+		let readChar = Keyboard.readChar();
+		return;
+	}
+}

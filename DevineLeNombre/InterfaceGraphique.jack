@@ -1,0 +1,198 @@
+class InterfaceGraphique {
+	function void drawHeaderStatic(){
+		return;
+	}
+	function void drawHeaderLine(){	
+		do Screen.setColor(true);
+		do Screen.drawLine(0, 12, 511, 12);
+		return;
+	}
+
+	function void clearOutputString(int startI, int startJ, int lineLength){
+		var int endJ;
+		let endJ = startJ + lineLength;
+		do Output.moveCursor(startI, endJ);
+		while (startJ < endJ){
+			do Output.backSpace();
+			let endJ = endJ - 1;
+		}
+		return;
+		
+	}
+	function void clearMainWindow(){
+		do Screen.setColor(false);
+		do Screen.drawRectangle(0, 13, 511, 255);
+		return;
+	}
+	function void drawMainMenuStatic(){
+		do InterfaceGraphique.drawMainMenuGameName();
+		do InterfaceGraphique.drawMainMenuPlayButton();
+		return;
+	}	
+	function void drawMainMenu(int selectedButton){
+		do InterfaceGraphique.drawMainMenuStatic();
+		do InterfaceGraphique.drawMainMenuSelectedButtonUnderline(selectedButton);
+		return;
+	}
+	function void drawMainMenuSelectedButtonUnderline(int selectedButton){
+		if (selectedButton = 0){
+			do InterfaceGraphique.drawMainMenuPlayButtonUnderline();
+			return;
+		}
+		return;
+	}
+	function void clearMainMenuSelectedButtonUnderline(int selectedButton){
+		if (selectedButton = 0){
+			do InterfaceGraphique.clearMainMenuPlayButtonUnderline();
+			return;
+		}
+		return;
+	}
+	function void drawMainMenuGameName(){
+		do Screen.setColor(true);
+		do InterfaceGraphique.drawRectangleOutline(160, 40, 352, 56);
+		do Output.moveCursor(4, 24);
+		do Output.printString("Devine le nombre");
+		return;
+	}
+	function void drawRectangleOutline(int x, int y, int x2, int y2){
+		do Screen.drawLine(x, y, x2, y);
+		do Screen.drawLine(x, y, x, y2);
+		do Screen.drawLine(x, y2, x2, y2);
+		do Screen.drawLine(x2, y, x2, y2);	
+		return;
+	}
+	function void drawMainMenuButtonStatic(int x, int y){
+		do Screen.setColor(true);
+		do InterfaceGraphique.drawRectangleOutline(x, y, x + 64, y + 32);
+		return;
+	}
+	function void drawMainMenuPlayButton(){
+		do InterfaceGraphique.drawMainMenuButtonStatic(224, 78);
+		do Output.moveCursor(8, 30);
+		do Output.printString("Jouer");
+		return;
+	}
+	function void drawMainMenuPlayButtonUnderline(){
+		do Screen.setColor(true);
+		do InterfaceGraphique.drawMainMenuPlayButtonUnderlineWithoutSetColor();
+		return;
+	}
+	function void clearMainMenuPlayButtonUnderline(){
+		do Screen.setColor(false);
+		do InterfaceGraphique.drawMainMenuPlayButtonUnderlineWithoutSetColor();
+		return;
+	}
+	function void drawMainMenuPlayButtonUnderlineWithoutSetColor(){
+		do Screen.drawLine(240, 102, 272, 102); 
+		return;
+	}
+	function void drawSeedPrompt(){
+		do Output.moveCursor(12, 14);
+		do Output.printString("Appuiez sur n importe quelle touche pour commencer");
+		return;
+	}
+	function void drawGameWindowStatic(){
+		do InterfaceGraphique.drawGameWindowRemainedAttempsStatic();
+		do InterfaceGraphique.drawGameWindowNumberRangeStatic();
+		do InterfaceGraphique.drawGameWindowGreaterStatic();
+		do InterfaceGraphique.drawGameWindowLessStatic();
+		do InterfaceGraphique.drawGameWindowInputBoxStatic();
+		return;
+	}
+	function void drawGameWindow(int minNumber, int maxNumber){
+		do InterfaceGraphique.drawGameWindowStatic();
+		do InterfaceGraphique.drawGameWindowNumberRange(minNumber, maxNumber);
+		return;
+	}
+	function void drawGameWindowNumberRangeStatic(){
+		do Screen.setColor(true);
+		do InterfaceGraphique.drawRectangleOutline(144, 62, 368, 80);
+		return;
+	}
+	function void drawGameWindowNumberRange(int minNumber, int maxNumber){
+		do Output.moveCursor(6, 20);
+		do Output.printString("Entre: [");
+		do Output.printInt(minNumber);
+		do Output.printString(", ");
+		do Output.printInt(maxNumber);
+		do Output.printString("]");
+		return;
+	}
+	function void drawGameWindowLessStatic(){	
+		do Screen.setColor(true);
+		do InterfaceGraphique.drawRectangleOutline(80, 96, 192, 224);
+		do Screen.drawLine(80, 112, 192, 112);
+		do Output.moveCursor(9, 15);
+		do Output.printString("Plus");
+		return;	
+	}
+	function void drawGameWindowGreaterStatic(){
+		do Screen.setColor(true);
+		do InterfaceGraphique.drawRectangleOutline(322, 96, 434, 224);
+		do Screen.drawLine(322, 112, 434, 112);
+		do Output.moveCursor(9, 44);
+		do Output.printString("Moins");
+		return;
+	}
+	function void drawGameWindowRemainedAttempsStatic(){
+		do Screen.setColor(true);
+		do InterfaceGraphique.drawRectangleOutline(144, 40, 368, 58);
+		do Output.moveCursor(4, 20);
+		do Output.printString("tentatives: ");
+		return;
+	}
+	function void drawGameWindowRemainedAttempsCount(int count){
+		do Output.moveCursor(4, 38);
+		do Output.printInt(count);
+		return;
+	}
+	function void clearGameWindowRemainAttempsScore(){
+		do InterfaceGraphique.clearOutputString(4, 38, 5);
+		return;
+	}
+	function void drawGameWindowInputBoxStatic(){
+		do Screen.setColor(true);
+		do InterfaceGraphique.drawRectangleOutline(208, 96, 308, 136);
+		do Screen.drawLine(208, 112, 308, 112);
+		do Output.moveCursor(9, 30);
+		do Output.printString("Choix");
+		return;
+	}
+	function void moveGameWindowInputCursor(){
+		do Output.moveCursor(11, 30);
+		return;
+	}
+	function void clearGameWindowInput(){
+		do InterfaceGraphique.clearOutputString(11, 30, 3);
+		return;
+	}
+	function void drawGameWindowGreaterNumber(int greaterNumbersCount, int number){
+		do Output.moveCursor(11 + greaterNumbersCount, 44);
+		do Output.printInt(number);
+		return;	
+	}
+	function void drawGameWindowLessNumber(int lessNumbersCount, int number){
+		do Output.moveCursor(11 + lessNumbersCount, 15);
+		do Output.printInt(number);
+		return;	
+	}
+	function void drawWinWindowStatic(){
+		do Output.moveCursor(10, 27);
+		do Output.printString("Couvreur a gagne!");
+		return;
+	}
+	function void drawWinWindow(){
+		do InterfaceGraphique.drawWinWindowStatic();
+		return;
+	}
+	function void drawLoseWindowStatic(){
+		do Output.moveCursor(10, 27);
+		do Output.printString("Dommage, t'es nul");
+		return; 
+	}
+	function void drawLoseWindow(){
+		do InterfaceGraphique.drawLoseWindowStatic();
+		return;
+	}
+}
