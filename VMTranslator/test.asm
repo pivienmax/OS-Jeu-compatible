@@ -7,7 +7,7 @@
     Code assembleur de {'type': 'Call', 'function': 'Sys.init', 'parameter': '0'}
 
 
-//code de test/test.vm
+//code de test.vm
 	// push constant 10
     @ 10
     D=A

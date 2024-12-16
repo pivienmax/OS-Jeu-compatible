@@ -31,6 +31,6 @@ if __name__ == "__main__":
     if len(sys.argv) < 1:
         print("Usage: Translator.py <jack file| dir>")
     else:
-        jackfiles = sys.argv[0]
+        jackfiles = sys.argv[1]
         translator = Translator(jackfiles)
         translator.translate()

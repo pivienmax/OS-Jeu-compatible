@@ -1,202 +1,413 @@
+"""No comment"""
 import sys
-import ParserN
+import Parser
 
 
-def error(message=''):
-    print(f"SyntaxError: {message}")
-    exit()
 
 
 class Generator:
-    def __init__(self, arbre=None):
-        self.labelCounter = 0
-        if arbre is not None:
-            self.arbre = arbre
+    """No comment"""
+
+    def __init__(self, file=None):
+        if file is not None:
+            self.parser = Parser.Parser(file)
+            self.arbre = self.parser.jackclass()
+            print("Arbre syntaxique:", self.arbre)
             self.vmfile = open(self.arbre['name'] + '.vm', "w")
             self.symbolClassTable = []
             self.symbolRoutineTable = []
-        else:
-            self.arbre = None
+            self.output = []
 
-    def jackclass(self, arbre):
-        """Handles the class structure."""
-        if not isinstance(arbre, dict):
-            raise TypeError("L'objet 'arbre' doit être un dictionnaire, reçu : " + str(type(arbre)))
+    def jackclass(self):
+        """
+        Gère la classe Jack, incluant les déclarations de variables et sous-programmes.
+        """
+        class_name = self.arbre['name']
+        print(f"Processing class: {class_name}")
 
-        if 'name' not in arbre or 'variables' not in arbre or 'subroutines' not in arbre:
-            raise KeyError(
-                "L'objet 'arbre' doit contenir les clés 'name', 'variables', et 'subroutines'. Reçu : " + str(arbre))
-
-        self.vmfile.write("// class " + arbre['name'] + "\n")
-
-        # Add class-level variables
-        for var in arbre['variables']:  # Remplace 'varDec' par 'variables'
+        # Vérifie et traite les variables de classe
+        for var in self.arbre.get('varDec', []):
             self.variable(var)
 
-        # Process subroutines
-        for subroutine in arbre['subroutines']:  # Remplace 'subroutine' par 'subroutines'
+        self.vmfile.write(f"// Class {self.arbre['name']}\n")
+        for subroutine in self.arbre['subroutineDec']:
             self.subroutineDec(subroutine)
 
     def variable(self, var):
-        """Handles variable declarations (both instance and local variables)."""
-        kind = var['kind']
-        if kind == 'field':
+        """
+        Ajoute une variable à la table des symboles.
+        """
+        if var['kind'] in ['static', 'field']:
             self.symbolClassTable.append(var)
-        elif kind == 'static':
-            self.symbolClassTable.append(var)
-        else:
+        elif var['kind'] in ['argument', 'local']:
             self.symbolRoutineTable.append(var)
+        else:
+            self.error(f"Type de variable inconnu: {var['kind']}")
 
     def subroutineDec(self, routine):
-        """Handles the subroutine declaration and its body."""
-        self.vmfile.write("// Subroutine " + routine['name'] + "\n")
-        self.symbolRoutineTable = []  # Reset local symbol table
-        # Add arguments and locals
-        for var in routine['argument']:
-            self.variable(var)
-        for var in routine['local']:
-            self.variable(var)
+        """
+        Gère les déclarations de sous-programmes.
+        """
+        # Type de sous-programme (function, constructor, method)
+        subroutine_type = routine['type']
+        subroutine_name = routine['name']
 
-        # Generate code for subroutine body
-        self.vmfile.write("function " + self.arbre['name'] + "." + routine['name'] + " " +
-                          str(len(routine['local'])) + "\n")
+        # Nombre de variables locales
+        num_locals = len(routine['body']['vars'])  # Corrigé pour accéder à la clé correcte
 
-        if routine['type'] == 'constructor':
-            # Handle constructor-specific initialization (allocating memory for fields)
-            num_fields = len([var for var in self.symbolClassTable if var['kind'] == 'field'])
-            self.vmfile.write("push constant " + str(num_fields) + "\n")
-            self.vmfile.write("call Memory.alloc 1\n")
-            self.vmfile.write("pop pointer 0\n")
-        elif routine['type'] == 'method':
-            # Handle method-specific initialization (setting 'this' to the current object)
-            self.vmfile.write("push argument 0\n")
-            self.vmfile.write("pop pointer 0\n")
+        # Déclare la fonction dans le fichier VM
+        self.write_vm(f"function {self.arbre['name']}.{subroutine_name} {num_locals}")
 
-        # Generate code for subroutine instructions
-        for inst in routine['instructions']:
-            self.statement(inst)
+        # Initialisation spécifique pour les méthodes et constructeurs
+        if subroutine_type == 'method':
+            # Initialisation pour les méthodes : définir `this` sur l'objet passé en argument
+            self.write_vm("push argument 0")
+            self.write_vm("pop pointer 0")
+        elif subroutine_type == 'constructor':
+            # Initialisation pour les constructeurs : allouer de la mémoire pour les champs
+            num_fields = sum(1 for var in self.symbolClassTable if var['kind'] == 'field')
+            self.write_vm(f"push constant {num_fields}")
+            self.write_vm("call Memory.alloc 1")
+            self.write_vm("pop pointer 0")
 
-    def statement(self, inst):
-        """Handles different types of statements."""
-        if inst['type'] == 'let':
-            self.letStatement(inst)
-        elif inst['type'] == 'if':
-            self.ifStatement(inst)
-        elif inst['type'] == 'while':
-            self.whileStatement(inst)
-        elif inst['type'] == 'do':
-            self.doStatement(inst)
-        elif inst['type'] == 'return':
-            self.returnStatement(inst)
+        # Traiter les instructions du# Example snippet to handle the "." symbol in your tokenizer/parser.
+
+ # Consume the identifier
+
+        for instruction in routine['body']['statements']:  # Corrigé pour accéder à 'statements'
+            self.statement(instruction)
+
+    def statement(self, instruction):
+        """
+        Gère une instruction spécifique (do, let, if, while, return).
+        """
+        instruction_type = instruction['type']
+
+        if instruction_type == 'doStatement':
+            self.doStatement(instruction)  # Appel de la méthode doStatement
+        elif instruction_type == 'letStatement':
+            self.letStatement(instruction)
+        elif instruction_type == 'ifStatement':
+            self.ifStatement(instruction)
+        elif instruction_type == 'whileStatement':
+            self.whileStatement(instruction)
+        elif instruction_type == 'returnStatement':
+            self.returnStatement(instruction)
+        else:
+            raise SyntaxError(f"Instruction inconnue: {instruction_type}")
 
     def letStatement(self, inst):
-        """Handles let statements."""
-        self.vmfile.write("// let " + inst['variable'] + "\n")
-        # Handle index if present (array element assignment)
+        """
+        {'line': line, 'col': col, 'type': 'let',
+         'name': varName, 'indice': expression, 'valeur': expression}
+        """
+        print(f"Processing let statement: {inst}")  # Debugging line
+        var_name = inst.get('name')  # Get the variable name (e.g., 'sum') instead of 'variable'
+        if not var_name:
+            print(f"Error: Missing 'name' key in instruction: {inst}")
+            return
+
+        value = inst.get('valeur')  # Get the value to assign to the variable (e.g., 'a + b')
+        if not value:
+            print(f"Error: Missing 'valeur' key in instruction: {inst}")
+            return
+
+        # Generate code for the value (right-hand side of the assignment)
+        self.expression(value)  # This should push the result of 'a + b' onto the stack
+
+        # Debugging line to check the stack before the assignment
+        print(f"Stack after evaluating {value}:")  # Debugging line
+        self.write_vm("debug stack")  # This is a placeholder for your method to print the stack
+
+        # Check if it's an array assignment
         if 'indice' in inst and inst['indice']:
+            # Evaluate the array index (for array assignments like arr[i] = value)
             self.expression(inst['indice'])
-            self.vmfile.write("pop temp 0\n")
-            self.vmfile.write("push pointer 1\n")
-            self.vmfile.write("add\n")
-            self.vmfile.write("pop pointer 1\n")
-        # Handle assignment value
-        self.expression(inst['valeur'])
-        self.vmfile.write("pop local " + str(self.getVarIndex(inst['variable'])) + "\n")
+            # Push base address of the array
+            self.write_vm(f"push {self.get_segment(var_name)} {self.get_index(var_name)}")
+            # Add the index to the base address
+            self.write_vm("add")
+            # Store the value in the address pointed by the computed address
+            self.write_vm("pop temp 0")
+            self.write_vm("pop pointer 1")
+            self.write_vm("push temp 0")
+            self.write_vm("pop that 0")
+        else:
+            # Simple assignment (for scalar variables like 'sum = 5')
+            # Pop the evaluated value and assign it to the variable
+            self.write_vm(f"pop {self.get_segment(var_name)} {self.get_index(var_name)}")
+            print(f"Assigned {value} to {var_name}")  # Debugging line
 
     def ifStatement(self, inst):
-        """Handles if statements."""
-        label_true = self.newLabel()
-        label_end = self.newLabel()
-        self.vmfile.write("// if " + str(inst['condition']) + "\n")
+        """
+        {'line':line, 'col': col,
+        'type': 'if', 'condition': expression, 'true': [instruction],
+        'false': [instruction]}
+        """
+        label_true = self.new_label()
+        label_false = self.new_label()
+
         self.expression(inst['condition'])
-        self.vmfile.write("if-goto " + label_true + "\n")
-        self.vmfile.write("goto " + label_end + "\n")
-        self.vmfile.write("label " + label_true + "\n")
-        for true_inst in inst['true']:
-            self.statement(true_inst)
-        self.vmfile.write("label " + label_end + "\n")
+        self.write_vm(f"if-goto {label_true}")
+        for instr in inst['false']:
+            self.statement(instr)
+        self.write_vm(f"goto {label_false}")
+        self.write_vm(f"label {label_true}")
+        for instr in inst['true']:
+            self.statement(instr)
+        self.write_vm(f"label {label_false}")
 
     def whileStatement(self, inst):
-        """Handles while statements."""
-        label_start = self.newLabel()
-        label_end = self.newLabel()
-        self.vmfile.write("// while " + str(inst['condition']) + "\n")
-        self.vmfile.write("label " + label_start + "\n")
-        self.expression(inst['condition'])
-        self.vmfile.write("not\n")
-        self.vmfile.write("if-goto " + label_end + "\n")
-        for while_inst in inst['instructions']:
-            self.statement(while_inst)
-        self.vmfile.write("goto " + label_start + "\n")
-        self.vmfile.write("label " + label_end + "\n")
+        """
+        {'line':line, 'col': col,
+        'type': 'while', 'condition': expression,
+        'instructions': [instruction]}
+        """
+        label_start = self.new_label()
+        label_end = self.new_label()
 
-    def doStatement(self, inst):
-        """Handles do statements."""
-        self.vmfile.write("// do " + str(inst['name']) + "\n")
-        self.subroutineCall(inst)
+        self.write_vm(f"label {label_start}")
+        self.expression(inst['condition'])
+        self.write_vm(f"not")
+        self.write_vm(f"if-goto {label_end}")
+        for instr in inst['instructions']:
+            self.statement(instr)
+        self.write_vm(f"goto {label_start}")
+        self.write_vm(f"label {label_end}")
+
+    def doStatement(self, instruction):
+        """
+        Gère une instruction `do`, qui correspond à un appel de sous-routine.
+        """
+        subroutine_call = instruction['call']  # Extraire l'appel de sous-routine
+        self.subroutineCall(subroutine_call)  # Traiter l'appel de sous-routine
+
+        # Ignore la valeur de retour de l'appel de sous-routine
+        self.write_vm("pop temp 0")
 
     def returnStatement(self, inst):
-        """Handles return statements."""
-        self.vmfile.write("// return\n")
-        if inst['valeur']:
+        """
+        {'line':line, 'col': col, 'type': 'return', 'valeur': expression}
+        """
+        if 'valeur' in inst and inst['valeur'] is not None:
             self.expression(inst['valeur'])
         else:
-            self.vmfile.write("push constant 0\n")
-        self.vmfile.write("return\n")
+            self.write_vm("push constant 0")
+        self.write_vm("return")
 
     def expression(self, exp):
-        """Handles expressions and operations."""
-        for term in exp:
-            self.term(term)
+        """
+        [term op ...]
+        avec op : '+'|'-'|'*'|'/'|'&'|'|'<'|'>'|'='
+        """
+        print(f"Processing expression: {exp}")
+
+        # Traiter le terme gauche (left)
+        if 'left' in exp:
+            print(f"Left term: {exp['left']}")
+            self.term(exp['left'])
+
+        # Vérifier si un opérateur est présent et traiter le terme droit (right)
+        if 'op' in exp:
+            print(f"Operator: {exp['op']}")
+
+            # Traiter le terme droit (right)
+            if 'right' in exp:
+                print(f"Right term: {exp['right']}")
+                self.term(exp['right'])
+
+            # Générer le code VM pour l'opérateur
+            if exp['op'] == '+':
+                print("VM Code: add")
+                self.write_add()  # Ajoute l'instruction VM pour l'addition
+            elif exp['op'] == '-':
+                print("VM Code: sub")
+                self.write_sub()  # Ajoute l'instruction VM pour la soustraction
+            elif exp['op'] == '*':
+                print("VM Code: call Math.multiply 2")
+                self.write_call("Math.multiply", 2)  # Appelle la multiplication
+            elif exp['op'] == '/':
+                print("VM Code: call Math.divide 2")
+                self.write_call("Math.divide", 2)  # Appelle la division
+            elif exp['op'] == '&':
+                print("VM Code: and")
+                self.write_and()  # Effectue une opération AND
+            elif exp['op'] == '|':
+                print("VM Code: or")
+                self.write_or()  # Effectue une opération OR
+            elif exp['op'] == '<':
+                print("VM Code: lt")
+                self.write_lt()  # Effectue une comparaison inférieure
+            elif exp['op'] == '>':
+                print("VM Code: gt")
+                self.write_gt()  # Effectue une comparaison supérieure
+            elif exp['op'] == '=':
+                print("VM Code: eq")
+                self.write_eq()  # Effectue une comparaison d'égalité
 
     def term(self, t):
-        """Handles terms in an expression."""
+        """
+        {'line':line, 'col': col,
+        'type': 'int'| 'string'| 'constant'| 'varName'|'call'| 'expression'|'-'|'~',
+         'indice':expression, 'subroutineCall': subroutineCall}
+        """
         if t['type'] == 'int':
-            self.vmfile.write("push constant " + str(t['value']) + "\n")
+            self.write_vm(f"push constant {t['value']}")
         elif t['type'] == 'string':
-            self.vmfile.write("push constant " + str(len(t['value'])) + "\n")
-            self.vmfile.write("call String.new 1\n")
-            for char in t['value']:
-                self.vmfile.write("push constant " + str(ord(char)) + "\n")
-                self.vmfile.write("call String.appendChar 2\n")
-        elif t['type'] == 'constant':
-            self.vmfile.write("push constant " + str(t['value']) + "\n")
+            self.handle_string(t['value'])
         elif t['type'] == 'varName':
-            self.vmfile.write("push " + t['kind'] + " " + str(self.getVarIndex(t['name'])) + "\n")
+            self.write_vm(f"push {self.get_segment(t['name'])} {self.get_index(t['name'])}")
         elif t['type'] == 'call':
-            self.subroutineCall(t)
+            self.subroutineCall(t['subroutineCall'])
         elif t['type'] == 'expression':
-            self.vmfile.write("(")
-            self.expression(t['indice'])
-            self.vmfile.write(")")
+            self.expression(t['value'])
 
     def subroutineCall(self, call):
-        """Handles subroutine calls."""
-        self.vmfile.write("call " + call['classvar'] + "." + call['name'] + " " + str(len(call['argument'])) + "\n")
-        for arg in call['argument']:
-            self.expression(arg)
-    def getVarIndex(self, varName):
-        """Find the variable's index in the symbol table."""
-        for idx, var in enumerate(self.symbolRoutineTable):
-            if var['name'] == varName:
-                return idx
-        for idx, var in enumerate(self.symbolClassTable):
-            if var['name'] == varName:
-                return idx
-        return -1
+        """
+        {'line':line, 'col': col, 'classvar': className ou varName,
+        'name': subroutineName, 'argument': [expression]}
+        """
+        object_name = call.get('object')  # Objet ou classe
+        subroutine_name = call['name']  # Nom de la méthode
+        args = call['args']  # Arguments de la méthode
 
-    def newLabel(self):
-        """Generates a new label for control flow."""
-        label = "LABEL" + str(self.labelCounter)
-        self.labelCounter += 1
+        if object_name:
+            full_name = f"{object_name}.{subroutine_name}"
+        else:
+            full_name = subroutine_name
+        # Traiter les arguments
+        num_args = 0
+        for arg in args:
+            self.expression(arg)  # Génère le code pour chaque argument
+            num_args += 1
+        self.write_vm(f"call {full_name} {num_args}")
+
+    def handle_string(self, value):
+        """
+        Gère une chaîne de caractères.
+        """
+        self.write_vm(f"push constant {len(value)}")
+        self.write_vm("call String.new 1")
+        for char in value:
+            self.write_vm(f"push constant {ord(char)}")
+            self.write_vm("call String.appendChar 2")
+
+    def get_segment(self, var_name):
+        """
+        Récupère le segment de mémoire pour une variable.
+        """
+        for var in self.symbolClassTable + self.symbolRoutineTable:
+            if var['name'] == var_name:
+                return {'static': 'static', 'field': 'this', 'argument': 'argument', 'local': 'local'}[var['kind']]
+        self.error(f"Variable inconnue: {var_name}")
+
+    def get_index(self, var_name):
+        """
+        Récupère l'index d'une variable dans son segment.
+        """
+        for i, var in enumerate(self.symbolClassTable + self.symbolRoutineTable):
+            if var['name'] == var_name:
+                return i
+        self.error(f"Variable inconnue: {var_name}")
+
+    def new_label(self):
+        """
+        Génère un nouveau label unique.
+        """
+        if not hasattr(self, '_label_count'):
+            self._label_count = 0
+        label = f"L{self._label_count}"
+        self._label_count += 1
         return label
 
+    def write_vm(self, command):
+        """Writes VM command to the file and also prints it for debugging."""
+        print(command)  # Debugging line
+        self.vmfile.write(command + '\n')
+
+    def error(self, message=''):
+        print(f"SyntaxError: {message}")
+        exit()
+
+
+    def write_push(self, segment, index):
+        """Génère une instruction VM pour un 'push'."""
+        self.output.append(f"push {segment} {index}")
+
+    def write_pop(self, segment, index):
+        """Génère une instruction VM pour un 'pop'."""
+        self.output.append(f"pop {segment} {index}")
+
+    def write_add(self):
+        """Génère une instruction VM pour l'addition."""
+        self.output.append("add")
+
+    def write_sub(self):
+        """Génère une instruction VM pour la soustraction."""
+        self.output.append("sub")
+
+    def write_neg(self):
+        """Génère une instruction VM pour la négation."""
+        self.output.append("neg")
+
+    def write_eq(self):
+        """Génère une instruction VM pour la comparaison d'égalité."""
+        self.output.append("eq")
+
+    def write_gt(self):
+        """Génère une instruction VM pour la comparaison 'greater than'."""
+        self.output.append("gt")
+
+    def write_lt(self):
+        """Génère une instruction VM pour la comparaison 'less than'."""
+        self.output.append("lt")
+
+    def write_and(self):
+        """Génère une instruction VM pour l'opération logique AND."""
+        self.output.append("and")
+
+    def write_or(self):
+        """Génère une instruction VM pour l'opération logique OR."""
+        self.output.append("or")
+
+    def write_not(self):
+        """Génère une instruction VM pour l'opération logique NOT."""
+        self.output.append("not")
+
+    def write_call(self, name, num_args):
+        """Génère une instruction VM pour appeler une fonction."""
+        self.output.append(f"call {name} {num_args}")
+
+    def write_return(self):
+        """Génère une instruction VM pour retourner d'une fonction."""
+        self.output.append("return")
+
+    def write_function(self, name, num_locals):
+        """Génère une instruction VM pour définir une fonction."""
+        self.output.append(f"function {name} {num_locals}")
+
+    def write_label(self, label):
+        """Génère une instruction VM pour un label."""
+        self.output.append(f"label {label}")
+
+    def write_goto(self, label):
+        """Génère une instruction VM pour un saut inconditionnel."""
+        self.output.append(f"goto {label}")
+
+    def write_if(self, label):
+        """Génère une instruction VM pour un saut conditionnel."""
+        self.output.append(f"if-goto {label}")
+
+    def get_vm_output(self):
+        return self.get_output()
+
+    def get_output(self):
+        """Retourne le code VM généré sous forme de chaîne."""
+        return "\n".join(self.output)
 
 if __name__ == '__main__':
-    file = sys.argv[0]
+    file = sys.argv[1]
     print('-----debut')
-    parser = ParserN.Parser(file)
-    arbre = parser.jackclass()
-    generator = Generator(arbre)
-    generator.jackclass(generator.arbre)
+    generator = Generator(file)
+    generator.jackclass()
     print('-----fin')

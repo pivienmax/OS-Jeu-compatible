@@ -1,0 +1,119 @@
+
+        graph mygraph {
+        n0 [shape=point] ;
+        
+        n1 [shape="invhouse",label="class"];
+        n0 -- n1 [label=""];
+        
+        n2 [label=Main];
+        n1 -- n2[label="name"]
+        
+        n3 [shape="point",label=""];
+        n1 -- n3 [label="classVarDec"];
+        
+        n4 [shape="point",label=""];
+        n1 -- n4 [label="subroutineDec"];
+        
+        n5 [shape="invhouse",label="subroutineDec"];
+        n4 -- n5 [label=""];
+        
+        n6 [label=function];
+        n5 -- n6[label="subroutineType"]
+        
+        n7 [label=void];
+        n5 -- n7[label="returnType"]
+        
+        n8 [label=main];
+        n5 -- n8[label="name"]
+        
+        n9 [shape="point",label=""];
+        n5 -- n9 [label="parameters"];
+        
+        n10 [shape="invhouse",label="subroutineBody"];
+        n5 -- n10 [label="body"];
+        
+        n11 [shape="point",label=""];
+        n10 -- n11 [label="vars"];
+        
+        n12 [shape="point",label=""];
+        n10 -- n12 [label="statements"];
+        
+        n13 [shape="invhouse",label="doStatement"];
+        n12 -- n13 [label=""];
+        
+        n14 [shape="invhouse",label="subroutineCall"];
+        n13 -- n14 [label="call"];
+        
+        n15 [label=Output];
+        n14 -- n15[label="object"]
+        
+        n16 [label=printInt];
+        n14 -- n16[label="name"]
+        
+        n17 [shape="point",label=""];
+        n14 -- n17 [label="args"];
+        
+        n18 [shape="invhouse",label="expression"];
+        n17 -- n18 [label=""];
+        
+        n19 [shape="point",label=""];
+        n18 -- n19 [label="terms"];
+        
+        n20 [shape="invhouse",label="term"];
+        n19 -- n20 [label=""];
+        
+        n21 [label=integerConstant];
+        n20 -- n21[label="subType"]
+        
+        n22 [label=1];
+        n20 -- n22[label="value"]
+        
+        n23 [shape="invhouse",label="dict"];
+        n19 -- n23 [label=""];
+        
+        n24 [label=+];
+        n23 -- n24[label="op"]
+        
+        n25 [shape="invhouse",label="term"];
+        n19 -- n25 [label=""];
+        
+        n26 [label=expression];
+        n25 -- n26[label="subType"]
+        
+        n27 [shape="invhouse",label="expression"];
+        n25 -- n27 [label="value"];
+        
+        n28 [shape="point",label=""];
+        n27 -- n28 [label="terms"];
+        
+        n29 [shape="invhouse",label="term"];
+        n28 -- n29 [label=""];
+        
+        n30 [label=integerConstant];
+        n29 -- n30[label="subType"]
+        
+        n31 [label=2];
+        n29 -- n31[label="value"]
+        
+        n32 [shape="invhouse",label="dict"];
+        n28 -- n32 [label=""];
+        
+        n33 [label=*];
+        n32 -- n33[label="op"]
+        
+        n34 [shape="invhouse",label="term"];
+        n28 -- n34 [label=""];
+        
+        n35 [label=integerConstant];
+        n34 -- n35[label="subType"]
+        
+        n36 [label=3];
+        n34 -- n36[label="value"]
+        
+        n37 [shape="invhouse",label="returnStatement"];
+        n12 -- n37 [label=""];
+        
+        n38 [label="None"];
+        n37 -- n38[label="expression"]
+        }
+        
